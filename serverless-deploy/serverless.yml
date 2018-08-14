@@ -1,0 +1,46 @@
+service: m9-generator-serverless-deploy
+
+custom:
+  config: ${file(config.json)}
+
+provider:
+  name: aws
+  runtime: nodejs8.10
+  memorySize: 3008
+  timeout: 10
+  region: ${self:custom.config.region}
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - "s3:PutObject"
+        - "s3:DeleteObject"
+        - "s3:GetObject"
+        - "s3:ListBucket"
+        - "s3:PutObjectAcl"
+      Resource:
+        - "arn:aws:s3:::${self:custom.config.s3Bucket}"
+        - "arn:aws:s3:::${self:custom.config.s3Bucket}/*"
+    - Effect: "Allow"
+      Action:
+        - "cloudfront:CreateInvalidation"
+      Resource:
+        - "*"
+
+resources:
+  Resources:
+    StaticSite:
+      Type: AWS::S3::Bucket
+      Properties:
+        AccessControl: PublicRead
+        BucketName: ${self:custom.config.s3Bucket}
+        WebsiteConfiguration:
+          IndexDocument: index.html
+
+package:
+  exclude:
+    - build/**
+    - node_modules/aws-sdk/**
+
+functions:
+  deploy:
+    handler: handlers.deploy

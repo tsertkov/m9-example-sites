@@ -1,0 +1,15 @@
+{
+  "name": "serverless-deploy",
+  "version": "0.0.1",
+  "main": "index.js",
+  "license": "UNLICENSED",
+  "private": true,
+  "dependencies": {
+    "@tsertkov/m9-generator": "0.0.24"
+  },
+  "scripts": {
+    "invoke-local-docker": "docker run --rm -v \"$PWD:/var/task\" lambci/lambda:nodejs8.10 handlers.deploy",
+    "invoke-local": "sls invoke local -f deploy",
+    "invoke-remote": "sls invoke -f deploy"
+  }
+}
