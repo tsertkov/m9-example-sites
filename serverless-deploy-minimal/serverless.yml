@@ -1,4 +1,4 @@
-service: m9-generator-serverless-deploy
+service: m9-serverless-deploy-minimal
 
 custom:
   config: ${file(config.json)}

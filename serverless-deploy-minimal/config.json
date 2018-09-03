@@ -1,5 +1,5 @@
 {
   "region": "eu-central-1",
-  "s3Bucket": "m9-serverless-deploy",
+  "s3Bucket": "m9-serverless-deploy-minimal",
   "cfId": "E12U4ZAH36QMQD"
 }

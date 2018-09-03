@@ -1,8 +1,7 @@
 {
-  "name": "serverless-deploy",
+  "name": "m9-serverless-deploy-minimal",
   "version": "0.0.1",
-  "main": "index.js",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "private": true,
   "dependencies": {
     "@tsertkov/m9-generator": "0.0.24"
