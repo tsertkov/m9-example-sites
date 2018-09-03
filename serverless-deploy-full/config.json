@@ -1,0 +1,13 @@
+{
+  "default": {
+    "region": "eu-central-1"
+  },
+  "staging": {
+    "s3Bucket": "m9-serverless-deploy-full-staging",
+    "cfId": ""
+  },
+  "production": {
+    "s3Bucket": "m9-serverless-deploy-full-production",
+    "cfId": ""
+  }
+}

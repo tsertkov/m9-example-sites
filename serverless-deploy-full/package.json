@@ -1,0 +1,16 @@
+{
+  "name": "m9-serverless-deploy-full",
+  "version": "0.0.1",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "@tsertkov/m9-generator": "0.0.30"
+  },
+  "scripts": {
+    "dev": "m9 dev",
+    "test": "m9 test",
+    "deploy": "m9 deploy",
+    "logs": "sls logs --tail --startTime 10m -f deploy",
+    "deploy-remote": "sls invoke -f deploy"
+  }
+}
