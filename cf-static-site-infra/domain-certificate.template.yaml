@@ -1,0 +1,28 @@
+AWSTemplateFormatVersion: 2010-09-09
+Parameters:
+  DomainName:
+    Type: String
+    MinLength: 4
+Resources:
+  Certificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !Ref DomainName
+      SubjectAlternativeNames:
+        - !Sub
+          - '*.${Domain}'
+          - { Domain: !Ref DomainName }
+      DomainValidationOptions:
+        - DomainName: !Ref DomainName
+          ValidationDomain: !Ref DomainName
+        - DomainName: !Ref DomainName
+          ValidationDomain: !Ref DomainName
+      Tags:
+        -
+          Key: project
+          Value: !Ref DomainName
+      ValidationMethod: DNS
+Outputs:
+  Certificate:
+    Value: !Ref Certificate
+    Description: SSL Certificate arn

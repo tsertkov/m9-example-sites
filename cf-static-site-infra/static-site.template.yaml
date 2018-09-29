@@ -1,0 +1,227 @@
+AWSTemplateFormatVersion: 2010-09-09
+Parameters:
+  DomainName:
+    Type: String
+    MinLength: 4
+Resources:
+  WWWBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub
+        - 'www.${Domain}'
+        - Domain: !Ref DomainName
+      WebsiteConfiguration:
+        RedirectAllRequestsTo:
+          HostName: !Ref DomainName
+          Protocol: https
+      Tags:
+        - Key: project
+          Value: !Ref DomainName
+  ProductionBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref DomainName
+      WebsiteConfiguration:
+        ErrorDocument: error-pages/404/index.html
+        IndexDocument: index.html
+      Tags:
+        - Key: project
+          Value: !Ref DomainName
+  StagingBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub
+        - 'staging.${Domain}'
+        - Domain: !Ref DomainName
+      WebsiteConfiguration:
+        ErrorDocument: error-pages/404/index.html
+        IndexDocument: index.html
+      Tags:
+        - Key: project
+          Value: !Ref DomainName
+  WWWBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref WWWBucket
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action:
+              - s3:GetObject
+            Principal: '*'
+            Resource:
+              - !GetAtt WWWBucket.Arn
+              - !Sub
+                - '${arn}/*'
+                - arn: !GetAtt WWWBucket.Arn
+  ProductionBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref ProductionBucket
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action:
+              - s3:GetObject
+            Principal: '*'
+            Resource:
+              - !GetAtt ProductionBucket.Arn
+              - !Sub
+                - '${arn}/*'
+                - arn: !GetAtt ProductionBucket.Arn
+  StagingBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref StagingBucket
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action:
+              - s3:GetObject
+            Principal: '*'
+            Resource:
+              - !GetAtt StagingBucket.Arn
+              - !Sub
+                - '${arn}/*'
+                - arn: !GetAtt StagingBucket.Arn
+  WWWDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: True
+        HttpVersion: http2
+        Aliases:
+           - !Sub
+            - 'www.${Domain}'
+            - Domain: !Ref DomainName
+        DefaultCacheBehavior:
+          Compress: True
+          TargetOriginId: !Sub
+            - 'S3-www.${Domain}'
+            - Domain: !Ref DomainName
+          ViewerProtocolPolicy: redirect-to-https
+          ForwardedValues:
+            QueryString: false
+        Origins:
+          - Id: !Sub
+              - 'S3-www.${Domain}'
+              - Domain: !Ref DomainName
+            DomainName: !Sub
+              - '${Bucket}.s3-website.${AWS::Region}.amazonaws.com'
+              - Bucket: !Ref WWWBucket
+            CustomOriginConfig:
+              OriginProtocolPolicy: http-only
+      Tags:
+        - Key: project
+          Value: !Ref DomainName
+  ProductionDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: True
+        HttpVersion: http2
+        Aliases:
+           - !Ref DomainName
+        DefaultCacheBehavior:
+          Compress: True
+          TargetOriginId: !Sub
+            - 'S3-${Domain}'
+            - Domain: !Ref DomainName
+          ViewerProtocolPolicy: redirect-to-https
+          ForwardedValues:
+            QueryString: false
+        Origins:
+          - Id: !Sub
+              - 'S3-${Domain}'
+              - Domain: !Ref DomainName
+            DomainName: !Sub
+              - '${Bucket}.s3-website.${AWS::Region}.amazonaws.com'
+              - Bucket: !Ref ProductionBucket
+            CustomOriginConfig:
+              OriginProtocolPolicy: http-only
+      Tags:
+        - Key: project
+          Value: !Ref DomainName
+  StagingDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: True
+        HttpVersion: http2
+        Aliases:
+           - !Sub
+            - 'staging.${Domain}'
+            - Domain: !Ref DomainName
+        DefaultCacheBehavior:
+          Compress: True
+          TargetOriginId: !Sub
+            - 'S3-staging.${Domain}'
+            - Domain: !Ref DomainName
+          ViewerProtocolPolicy: redirect-to-https
+          ForwardedValues:
+            QueryString: false
+        Origins:
+          - Id: !Sub
+              - 'S3-staging.${Domain}'
+              - Domain: !Ref DomainName
+            DomainName: !Sub
+              - '${Bucket}.s3-website.${AWS::Region}.amazonaws.com'
+              - Bucket: !Ref StagingBucket
+            CustomOriginConfig:
+              OriginProtocolPolicy: http-only
+      Tags:
+        - Key: project
+          Value: !Ref DomainName
+  DnsZone:
+    Type: AWS::Route53::HostedZone
+    Properties:
+      Name: !Ref DomainName
+      HostedZoneTags:
+        - Key: project
+          Value: !Ref DomainName
+  WWWRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      Type: A
+      Name: !Sub
+        - 'www.${Domain}'
+        - Domain: !Ref DomainName
+      HostedZoneId: !Ref DnsZone
+      AliasTarget:
+        DNSName: !GetAtt WWWDistribution.DomainName
+        HostedZoneId: Z2FDTNDATAQYW2
+  ProductionRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      Type: A
+      Name: !Ref DomainName
+      HostedZoneId: !Ref DnsZone
+      AliasTarget:
+        DNSName: !GetAtt ProductionDistribution.DomainName
+        HostedZoneId: Z2FDTNDATAQYW2
+  StagingRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      Type: A
+      Name: !Sub
+        - 'staging.${Domain}'
+        - Domain: !Ref DomainName
+      HostedZoneId: !Ref DnsZone
+      AliasTarget:
+        DNSName: !GetAtt StagingDistribution.DomainName
+        HostedZoneId: Z2FDTNDATAQYW2
+Outputs:
+  ProductionBucket:
+    Value: !Ref ProductionBucket
+  ProductionDistribution:
+    Value: !Ref ProductionDistribution
+  ProductionDomain:
+    Value: !Ref DomainName
+  StagingBucket:
+    Value: !Ref StagingBucket
+  StagingDistribution:
+    Value: !Ref StagingDistribution
+  StagingDomain:
+    Value: !Sub
+      - 'staging.${Domain}'
+      - Domain: !Ref DomainName
