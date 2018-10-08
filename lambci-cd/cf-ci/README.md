@@ -23,8 +23,9 @@ Follow documentation at https://github.com/lambci/ecs.
 Create IAM role to be assumed by ci jobs.
 
 ```bash
-$ DOMAIN=example.com aws cloudformation create-stack \
-  --stack-name "${DOMAIN/./-}-ci-role" \
+$ export DOMAIN=example.com
+$ aws cloudformation create-stack \
+  --stack-name "${DOMAIN//./-}-ci-role" \
   --template-body "file://${PWD}/ci-role.template.yaml" \
   --capabilities CAPABILITY_IAM \
   --parameters ParameterKey=DomainName,ParameterValue="$DOMAIN" ParameterKey=ProjectName,ParameterValue="${DOMAIN/./-}"
