@@ -1,7 +1,7 @@
 {
   "common": {
-    "project": "m9-lambci-cd",
-    "domain": "m9-lambci-cd.example.com",
+    "project": "lambci-cd-example-com",
+    "domain": "lambci-cd-example.com",
     "region": "eu-central-1"
   },
   "staging": {

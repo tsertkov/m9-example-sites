@@ -1,5 +1,6 @@
 const config = require('../config')
 module.exports = m9config => {
+  const { stage } = m9config
   const {
     region,
     cfId,
@@ -10,7 +11,9 @@ module.exports = m9config => {
     config[m9config.stage] || {}
   )
 
-  const s3Bucket = `${m9config.stage}.${domain}`
+  const s3Bucket = stage === 'production'
+    ? domain
+    : `${stage}.${domain}`
 
   return {
     ...m9config,
