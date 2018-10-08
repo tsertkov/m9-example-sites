@@ -20,10 +20,10 @@ Follow documentation at https://github.com/lambci/ecs.
 
 ## IAM role for running CI tasks
 
-Create IAM role for running ci tasks with.
+Create IAM role to be assumed by ci jobs.
 
 ```bash
-$ DOMAIN=tokenguru.net aws cloudformation create-stack \
+$ DOMAIN=example.com aws cloudformation create-stack \
   --stack-name "${DOMAIN/./-}-ci-role" \
   --template-body "file://${PWD}/ci-role.template.yaml" \
   --capabilities CAPABILITY_IAM \
@@ -32,7 +32,7 @@ $ DOMAIN=tokenguru.net aws cloudformation create-stack \
 
 ## Project configuration
 
-### Set project configuration
+### Configure project
 
 Replace following variables with their values:
 
@@ -41,17 +41,21 @@ Replace following variables with their values:
 - TASK_ROLE: Arn of IAM role managed by ci-role stack
 
 ```bash
-$ lambci config --project gh/t-projects/tokenguru.net CHECK_VERSION_URL false
-$ lambci config --project gh/t-projects/tokenguru.net noClone true
-$ lambci config --project gh/t-projects/tokenguru.net branches.staging true
-$ lambci config --project gh/t-projects/tokenguru.net env.LAMBCI_DOCKER_RUN_ARGS "--ulimit nofile=65535:65535"
-$ lambci config --project gh/t-projects/tokenguru.net docker.cluster <CLUSTER>
-$ lambci config --project gh/t-projects/tokenguru.net docker.task <TASK>
-$ lambci config --project gh/t-projects/tokenguru.net docker.taskRole <TASK_ROLE>
+$ export PROJECT=gh/example.com
+$ export CLUSTER_ID=<CLUSTER>
+$ export TASK_ID=<TASK>
+$ export TASK_ROLE=<TASK_ROLE>
+$ lambci config --project $PROJECT CHECK_VERSION_URL false
+$ lambci config --project $PROJECT noClone true
+$ lambci config --project $PROJECT branches.staging true
+$ lambci config --project $PROJECT env.LAMBCI_DOCKER_RUN_ARGS "--ulimit nofile=65535:65535"
+$ lambci config --project $PROJECT docker.cluster $CLUSTER_ID
+$ lambci config --project $PROJECT docker.task $TASK_ID
+$ lambci config --project $PROJECT docker.taskRole $TASK_ROLE
 ```
 
-### Enable GitHub integration:
+### Integrate with GitHub repo service
 
 ```bash
-$ lambci hook --add gh/t-projects/<REPO_NAME>
+$ lambci hook --add $PROJECT
 ```
