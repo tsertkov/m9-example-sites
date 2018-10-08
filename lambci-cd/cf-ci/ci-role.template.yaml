@@ -1,0 +1,158 @@
+AWSTemplateFormatVersion: 2010-09-09
+Parameters:
+  DomainName:
+    Type: String
+    MinLength: 4
+  ProjectName:
+    Type: String
+    MinLength: 4
+Resources:
+  CIRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+              - ecs-tasks.amazonaws.com
+          Action:
+            - sts:AssumeRole
+      Policies:
+        - PolicyName: ci-policy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - cloudformation:ValidateTemplate
+                Resource:
+                  - "*"
+              - Effect: Allow
+                Action:
+                  - cloudformation:DescribeStacks
+                  - cloudformation:CreateStack
+                  - cloudformation:DescribeStackEvents
+                  - cloudformation:DescribeStackResource
+                  - cloudformation:UpdateStack
+                  - cloudformation:DeleteStack
+                Resource:
+                  - !Sub
+                    - arn:aws:cloudformation:*:*:stack/${Project}-deploy-production/*
+                    - Project: !Ref ProjectName
+                  - !Sub
+                    - arn:aws:cloudformation:*:*:stack/${Project}-deploy-staging/*
+                    - Project: !Ref ProjectName
+              - Effect: Allow
+                Action:
+                  - s3:*
+                Resource:
+                  - !Sub
+                    - arn:aws:s3:::${Project}-deploy-*/*
+                    - Project: !Ref ProjectName
+                  - !Sub
+                    - arn:aws:s3:::${Domain}-pr*/*
+                    - Domain: !Ref DomainName
+              - Effect: Allow
+                Action:
+                  - s3:CreateBucket
+                  - s3:DeleteBucket
+                  - s3:ListBucket
+                  - s3:PutBucketWebsite
+                Resource:
+                  - !Sub
+                    - arn:aws:s3:::${Domain}-pr*
+                    - Domain: !Ref DomainName
+                  - !Sub
+                    - arn:aws:s3:::${Project}-deploy-*
+                    - Project: !Ref ProjectName
+              - Effect: Allow
+                Action:
+                  - cloudfront:CreateInvalidation
+                Resource:
+                  - "*"
+              - Effect: Allow
+                Action:
+                  - apigateway:GET
+                  - apigateway:POST
+                  - apigateway:DELETE
+                  - apigateway:POST
+                  - apigateway:PUT
+                  - apigateway:PATCH
+                Resource:
+                  - arn:aws:apigateway:*::/apikeys
+                  - arn:aws:apigateway:*::/apikeys/*
+                  - arn:aws:apigateway:*::/usageplans/*
+                  - arn:aws:apigateway:*::/usageplans
+                  - arn:aws:apigateway:*::/restapis
+                  - arn:aws:apigateway:*::/restapis/*
+              - Effect: Allow
+                Action:
+                  - logs:DescribeLogGroups
+                Resource:
+                  - arn:aws:logs:*:*:log-group:*
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:DeleteLogGroup
+                Resource:
+                  - !Sub
+                    - arn:aws:logs:*:*:log-group:/aws/lambda/${Project}-deploy-*:*
+                    - Project: !Ref ProjectName
+              - Effect: Allow
+                Action:
+                  - dynamodb:DescribeTable
+                  - dynamodb:CreateTable
+                  - dynamodb:DeleteTable
+                  - dynamodb:ListTagsOfResource
+                  - dynamodb:TagResource
+                  - dynamodb:UntagResource
+                Resource:
+                  - !Sub
+                    - arn:aws:dynamodb:*:*:table/${Project}-deploy-*
+                    - Project: !Ref ProjectName
+              - Effect: Allow
+                Action:
+                  - iam:GetRole
+                Resource:
+                  - "*"
+              - Effect: Allow
+                Action:
+                  - iam:CreateRole
+                  - iam:PutRolePolicy
+                  - iam:DeleteRolePolicy
+                  - iam:DeleteRole
+                  - iam:PassRole
+                Resource:
+                  - !Sub
+                    - arn:aws:iam::*:role/${Project}-deploy-*-lambdaRole
+                    - Project: !Ref ProjectName
+              - Effect: Allow
+                Action:
+                  - lambda:GetFunction
+                  - lambda:ListVersionsByFunction
+                  - lambda:CreateFunction
+                  - lambda:UpdateFunctionCode
+                  - lambda:UpdateFunctionConfig
+                  - lambda:GetFunctionConfiguration
+                  - lambda:AddPermission
+                  - lambda:PublishVersion
+                  - lambda:PutFunctionConcurrency
+                  - lambda:DeleteFunction
+                  - lambda:RemovePermission
+                Resource:
+                  - !Sub
+                    - arn:aws:lambda:*:*:function:${Project}-deploy-*
+                    - Project: !Ref ProjectName
+              - Effect: Allow
+                Action:
+                  - lambda:CreateEventSourceMapping
+                  - lambda:GetEventSourceMapping
+                  - lambda:DeleteEventSourceMapping
+                Resource:
+                  - "*"
+Outputs:
+  CIRole:
+    Value: !GetAtt CIRole.Arn
+    Description: IAM Role for CI tasks

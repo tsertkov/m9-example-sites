@@ -1,0 +1,15 @@
+{
+  "name": "lambci-cd",
+  "version": "1.0.0",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "@tsertkov/m9-generator": "0.0.30"
+  },
+  "scripts": {
+    "dev": "m9 dev",
+    "test": "m9 test",
+    "deploy": "m9 deploy",
+    "deploy-logs": "sls logs --tail --startTime 10m -f deploy"
+  }
+}
