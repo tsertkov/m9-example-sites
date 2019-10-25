@@ -1,6 +1,4 @@
 import tailwindcss from 'tailwindcss'
-import postcssImport from 'postcss-import'
-import postcssPresetEnv from 'postcss-preset-env'
 import purgecss from '@fullhuman/postcss-purgecss'
 
 module.exports = m9config => {
@@ -14,21 +12,12 @@ module.exports = m9config => {
     }
   }
 
+  // FIXME find a better way for manipulating webpack config
+  // Integrate tailwindcss and purgecss into css pipeline
+  const origPluginsFn = m9config.__webpack.module.rules[1].use[2].options.plugins
   m9config.__webpack.module.rules[1].use[2].options.plugins = () => {
-    const plugins = [
-      postcssImport(),
-      tailwindcss(),
-      postcssPresetEnv({
-        stage: 2,
-        features: {
-          'custom-properties': {
-            preserve: false
-          },
-          'nesting-rules': true,
-          'custom-media-queries': true
-        }
-      })
-    ]
+    const plugins = origPluginsFn()
+    plugins.splice(1, 0, tailwindcss())
 
     if (m9config.stage !== 'development') {
       plugins.push(
