@@ -34,7 +34,8 @@ module.exports = m9config => {
       plugins.push(
         purgecss({
           content: [
-            m9config.paths.srcPages + '/**/*.html.hbs'
+            m9config.paths.srcPages + '/**/*.html.hbs',
+            m9config.paths.srcPartials + '/**/*.hbs'
           ]
         })
       )
