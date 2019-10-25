@@ -11,6 +11,6 @@
   "scripts": {
     "dev": "m9 dev",
     "test": "m9 test",
-    "deploy": "m9 deploy"
+    "build": "m9 build"
   }
 }
