@@ -1,0 +1,16 @@
+{
+  "name": "m9-webstarter-min",
+  "version": "0.0.1",
+  "license": "UNLICENSED",
+  "private": true,
+  "dependencies": {
+    "@fullhuman/postcss-purgecss": "^1.3.0",
+    "@tsertkov/m9-generator": "0.0.31",
+    "tailwindcss": "^1.1.3"
+  },
+  "scripts": {
+    "dev": "m9 dev",
+    "test": "m9 test",
+    "deploy": "m9 deploy"
+  }
+}
