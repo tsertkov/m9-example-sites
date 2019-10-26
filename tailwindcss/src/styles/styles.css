@@ -5,7 +5,3 @@
 html, body {
   @apply bg-blue-300;
 }
-
-body {
-  @apply my-4;
-}
