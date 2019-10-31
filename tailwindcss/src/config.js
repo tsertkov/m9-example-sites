@@ -25,7 +25,8 @@ module.exports = m9config => {
           content: [
             m9config.paths.srcPages + '/**/*.html.hbs',
             m9config.paths.srcPartials + '/**/*.hbs'
-          ]
+          ],
+          defaultExtractor: content => content.match(/[\w-/:]+(?<!:)/g) || []
         })
       )
     }
